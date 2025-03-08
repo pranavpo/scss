@@ -125,10 +125,10 @@ async function handleScraping() {
         console.log('No stored JWT, using Puppeteer...');
         return runPuppeteerScraper();
     }
-    
+
     console.log('Using stored JWT and cookies...');
     const result = await makeRequest(storedAuth.jwt, storedAuth.cookies);
-    
+
     if (result.error || !Array.isArray(result.data?.rowData)) {
         console.log('Stored JWT failed, refreshing with Puppeteer...');
         return runPuppeteerScraper(flag = true);
@@ -137,11 +137,44 @@ async function handleScraping() {
     return result;
 }
 // uncomment below to scrape every 5 minutes
-cron.schedule('*/5 * * * *', async () => {
-    console.log('Running scheduled Puppeteer Scraper...');
-    const result = await runPuppeteerScraper();
-    console.log('Cron Job Result:', result);
+// cron.schedule('*/5 * * * *', async () => {
+//     console.log('Running scheduled Puppeteer Scraper...');
+//     const result = await runPuppeteerScraper();
+//     console.log('Cron Job Result:', result);
+// });
+
+// Add this endpoint to send data to the frontend after the cron job completes
+app.get('/events', async (req, res) => {  // Make this async to handle await inside
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.flushHeaders(); // Send headers to establish the connection.
+
+    // Function to send updates
+    const sendUpdates = async () => {
+        const result = await runPuppeteerScraper();
+        console.log('Cron Job Result:', result);
+        res.write(`data: ${JSON.stringify(result)}\n\n`); // Send data to client.
+    };
+
+    cron.schedule('*/2 * * * *', sendUpdates);
+
+    // Optionally, run sendUpdates initially if you want to send data right away.
+    await sendUpdates();
+
+    // Heartbeat every 30 seconds to keep the connection alive
+    const heartbeatInterval = setInterval(() => {
+        res.write('data: {"ping": "heartbeat"}\n\n'); // Send heartbeat
+    }, 30000);
+
+    // Keep the connection alive until client disconnects.
+    req.on('close', () => {
+        console.log('Client disconnected');
+        clearInterval(heartbeatInterval);  // Clear the heartbeat interval on disconnect
+        res.end();
+    });
 });
+
 
 app.get('/scrape-jwt/:pageNumber', async (req, res) => {
     try {
