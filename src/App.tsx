@@ -22,7 +22,7 @@ const App = () => {
       }
     } catch (error) {
       console.error('Error fetching data:', error);
-    }finally{
+    } finally {
       setIsLoading(false)
     }
   };
@@ -39,6 +39,25 @@ const App = () => {
     }
   };
 
+  useEffect(() => {
+    const eventSource = new EventSource('http://localhost:5000/events');
+    eventSource.onmessage = (event) => {
+      const updatedData = JSON.parse(event.data);
+      console.log('Received updated data:', updatedData);
+      // if(updatedData.data.rowData){
+        setData(updatedData.data.rowData);
+        setCount(updatedData.data.lastRow);
+      // }
+    };
+
+    eventSource.onerror = (error) => {
+      console.error('Error receiving data from server:', error);
+    };
+
+    return () => {
+      eventSource.close(); // Close the connection when the component unmounts
+    };
+  }, []);
   // useEffect(() => {
   //   fetchData();
   // }, []);
@@ -53,7 +72,7 @@ const App = () => {
       {/* Table Component, taking full width below buttons */}
       <div className="h-screen flex justify-center items-center px-4">
         <div className="w-full max-w-screen-xl ">
-          <TableWithButtons data={data} count={count} fetchData={fetchData} isLoading={isLoading}/>
+          <TableWithButtons data={data} count={count} fetchData={fetchData} isLoading={isLoading} />
         </div></div>
     </>
   );
