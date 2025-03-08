@@ -9,15 +9,21 @@ The backend is built with **Node.js** and Docker. Follow the steps below to set 
 ### Step 1: Clone the Backend Repository
 
 ```bash
-git clone https://github.com/your-username/backend.git
+git clone
 cd backend
 sudo docker-compose up
 ```
 
-## Frontend Setuo
-The frontend is built with React.js. Follow steps below to set up the frontend.
+## Frontend Setup
+The frontend is built with React.js and Tailwind.css.I have added tailwind through a CDN. Follow steps below to set up the frontend.
 
 ### Step 1: Clone the frontend repository
 ### Step2: cd into the project
 ### Step3: npm install
-## Step4: npm run dev
+### Step4: npm run dev
+
+```bash
+git clone
+cd frontend
+npm install
+npm run dev
