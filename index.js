@@ -137,15 +137,6 @@ async function handleScraping() {
     return result;
 }
 
-// uncomment below to scrape every 5 minutes
-cron.schedule('*/5 * * * *', async () => {
-    console.log('Running scheduled Puppeteer Scraper...');
-    const result = await runPuppeteerScraper();
-    console.log('Cron Job Result:', result);
-});
-
-// Add this endpoint to send data to the frontend after the cron job completes
-
 app.get('/scrape-jwt/:pageNumber', async (req, res) => {
     try {
         pageNumber = parseInt(req.params.pageNumber, 10) || 1;
