@@ -27,3 +27,11 @@ git clone
 cd frontend
 npm install
 npm run dev
+
+```
+
+## FEATURES
+### Pagination
+### Delete Auth Token
+### Puppeteer for login but uses headless docker container
+### Server sent event, every 2 minutes, new data is pulled from the site if any
