@@ -13,6 +13,8 @@ git clone
 cd backend
 sudo docker-compose up
 ```
+### OR simply run node index.js
+
 
 ## Frontend Setup
 The frontend is built with React.js and Tailwind.css.I have added tailwind through a CDN. Follow steps below to set up the frontend.
