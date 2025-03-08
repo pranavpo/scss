@@ -137,11 +137,11 @@ async function handleScraping() {
     return result;
 }
 // uncomment below to scrape every 5 minutes
-// cron.schedule('*/5 * * * *', async () => {
-//     console.log('Running scheduled Puppeteer Scraper...');
-//     const result = await runPuppeteerScraper();
-//     console.log('Cron Job Result:', result);
-// });
+cron.schedule('*/5 * * * *', async () => {
+    console.log('Running scheduled Puppeteer Scraper...');
+    const result = await runPuppeteerScraper();
+    console.log('Cron Job Result:', result);
+});
 
 app.get('/scrape-jwt/:pageNumber', async (req, res) => {
     try {
