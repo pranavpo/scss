@@ -7,6 +7,7 @@ const App = () => {
   const [data, setData] = useState([]);
   const [count, setCount] = useState(0);
   const [isLoading, setIsLoading] = useState(false)
+  const [pageNumber, setPageNumber] = useState(1)
 
   const fetchData = async (page = 1) => {
     try {
@@ -17,6 +18,8 @@ const App = () => {
         console.log('Fetched data:', result);
         setData(result.data.rowData);
         setCount(result.data.lastRow);
+        // page number needed for useEffect
+        setPageNumber(count/5)
       } else {
         console.error('Failed to fetch data');
       }
@@ -40,27 +43,8 @@ const App = () => {
   };
 
   useEffect(() => {
-    const eventSource = new EventSource('http://localhost:5000/events');
-    eventSource.onmessage = (event) => {
-      const updatedData = JSON.parse(event.data);
-      console.log('Received updated data:', updatedData);
-      // if(updatedData.data.rowData){
-        setData(updatedData.data.rowData);
-        setCount(updatedData.data.lastRow);
-      // }
-    };
-
-    eventSource.onerror = (error) => {
-      console.error('Error receiving data from server:', error);
-    };
-
-    return () => {
-      eventSource.close(); // Close the connection when the component unmounts
-    };
+    fetchData();
   }, []);
-  // useEffect(() => {
-  //   fetchData();
-  // }, []);
 
   return (
     <>
