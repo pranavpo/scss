@@ -7,8 +7,8 @@ const cors = require('cors');
 
 const app = express();
 
-const EMAIL = 'pranavpoudyal031@gmail.com';
-const PASSWORD = 'a,QuDb,JQ5a)WB;&';
+const EMAIL = 'insert email';
+const PASSWORD = 'insert password';
 
 app.use(cors());
 
