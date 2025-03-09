@@ -12,16 +12,18 @@ const PASSWORD = 'a,QuDb,JQ5a)WB;&';
 
 app.use(cors());
 
-let pageNumber = 1;
+// let pageNumber = 1;
 async function getStoredAuthData() {
     return await Token.findOne({ order: [['createdAt', 'DESC']] });
 }
 
 async function storeAuthData(jwt, cookies) {
     await Token.create({ jwt, cookies });
+    const tokens = await Token.findAll();
+    // console.log('Tokens in DB:', tokens);
 }
 
-async function runPuppeteerScraper(flag = false) {
+async function runPuppeteerScraper(flag = false, pageNumber) {
     let browser;
     try {
         console.log('Starting Puppeteer Scraper...');
@@ -58,7 +60,7 @@ async function runPuppeteerScraper(flag = false) {
         }
 
         const cookieHeader = filteredCookies.join('; ');
-        console.log('Cookies:', cookieHeader);
+        // console.log('Cookies:', cookieHeader);
         if (flag) {
             const storedAuth = await getStoredAuthData();
             if (storedAuth) {
@@ -74,7 +76,7 @@ async function runPuppeteerScraper(flag = false) {
         } else {
             await storeAuthData(jwtMatch[1], cookieHeader);
         }
-        return makeRequest(jwtMatch, cookieHeader);
+        return makeRequest(jwtMatch, cookieHeader, pageNumber);
     } catch (error) {
         console.error('Error during scraping:', error);
         return { error: 'Something went wrong' };
@@ -85,7 +87,7 @@ async function runPuppeteerScraper(flag = false) {
     }
 }
 
-async function makeRequest(jwtMatch, cookieHeader) {
+async function makeRequest(jwtMatch, cookieHeader, pageNumber) {
     const headers = {
         'Authorization': `Bearer ${jwtMatch[1]}`,
         'Cookie': cookieHeader
@@ -110,7 +112,7 @@ async function makeRequest(jwtMatch, cookieHeader) {
             { headers }
         );
 
-        console.log('Response from POST request:', response.data);
+        // console.log('Response from POST request:', response.data);
         return { success: true, data: response.data };
     } catch (error) {
         console.error('Error during POST request:', error);
@@ -118,20 +120,20 @@ async function makeRequest(jwtMatch, cookieHeader) {
     }
 }
 
-async function handleScraping() {
+async function handleScraping(pageNumber) {
     const storedAuth = await getStoredAuthData();
 
     if (!storedAuth) {
         console.log('No stored JWT, using Puppeteer...');
-        return runPuppeteerScraper();
+        return runPuppeteerScraper(flag = false, pageNumber);
     }
 
     console.log('Using stored JWT and cookies...');
-    const result = await makeRequest(storedAuth.jwt, storedAuth.cookies);
+    const result = await makeRequest(storedAuth.jwt, storedAuth.cookies, pageNumber);
 
     if (result.error || !Array.isArray(result.data?.rowData)) {
         console.log('Stored JWT failed, refreshing with Puppeteer...');
-        return runPuppeteerScraper(flag = true);
+        return runPuppeteerScraper(flag = true,pageNumber);
     }
 
     return result;
@@ -140,13 +142,12 @@ async function handleScraping() {
 app.get('/scrape-jwt/:pageNumber', async (req, res) => {
     try {
         pageNumber = parseInt(req.params.pageNumber, 10) || 1;
-        const result = await handleScraping();
+        const result = await handleScraping(pageNumber);
         res.json(result);
     } catch (error) {
         res.status(500).json({ error: 'Something went wrong' });
     }
 });
-
 
 app.delete('/delete-token', async (req, res) => {
     try {
